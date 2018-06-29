@@ -2,6 +2,9 @@ extern crate sdl2;
 extern crate sdl2_sys;
 extern crate gl;
 
+// Associated library
+extern crate ras;
+
 // For exiting process
 use std::process;
 
@@ -18,6 +21,10 @@ fn main() {
     let sdl_context = sdl2::init().unwrap();
     let video_ctx = sdl_context.video().unwrap();
 
+    // Create the Event Pool and a new game object
+    let mut event_pool = ras::events::EventPool::new();
+    let mut game = ras::game::Game::new(&mut event_pool);
+
     // Set OpenGL attributes
     let gl_attr = video_ctx.gl_attr();
     gl_attr.set_context_profile(GLProfile::Core);
@@ -32,7 +39,7 @@ fn main() {
         .unwrap();
 
     // Create GL context
-    let ctx = window.gl_create_context().unwrap();
+    let _ctx = window.gl_create_context().unwrap();
     gl::load_with(
         |name| video_ctx.gl_get_proc_address(name) as *const _);
 
@@ -63,13 +70,12 @@ fn main() {
                 _ => {}
             }
         }
-        
+
         // Track framerate
         let delta_time_ms = duration_to_ms(now.elapsed());
         now = Instant::now();
 
-        // Add game logic here
-        // ...
+        game.update(delta_time_ms);
 
         // Clear screen
         unsafe {
@@ -77,8 +83,7 @@ fn main() {
             gl::Clear(gl::COLOR_BUFFER_BIT);
         }
 
-        // Add render code here
-        // ...
+        // TODO: Add render code here
 
         // Swap what we just rendered onto screen
         // Remember that if vsync is enabled this is blocking

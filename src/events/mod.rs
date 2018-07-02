@@ -49,7 +49,7 @@ impl EventPool {
             for idx in 0..vec.len() {
                 let event = &vec[idx];
                 match event {
-                    Event::OnNameEntered {trigger_id, name } => {
+                    Event::OnNameEntered {trigger_id, name:_name } => {
                         if target_id == *trigger_id { 
                             result = Some(event);
                             event_idx = Some(idx);

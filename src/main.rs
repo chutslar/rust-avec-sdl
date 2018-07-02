@@ -20,10 +20,15 @@ fn main() {
     // Create SDL2 and Video contexts
     let sdl_context = sdl2::init().unwrap();
     let video_ctx = sdl_context.video().unwrap();
+    
+    // Check for controllers
+    let controller_subsystem = sdl_context.game_controller().unwrap();
+    let controllers = ras::controller::Controllers::new(&controller_subsystem);
+
 
     // Create the Event Pool and a new game object
     let mut event_pool = ras::events::EventPool::new();
-    let mut game = ras::game::Game::new(&mut event_pool);
+    let mut game = ras::game::Game::new(&mut event_pool, &controllers);
 
     // Set OpenGL attributes
     let gl_attr = video_ctx.gl_attr();

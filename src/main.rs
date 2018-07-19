@@ -60,8 +60,22 @@ fn main() {
         enable_vsync(true);
     }
 
+    //*** Render Test Code
+    let tri = ras::graphics::Triangles::new(
+        vec![
+            -0.5, -0.5, 0.0,
+            0.5, -0.5, 0.0,
+            0.0, 0.5, 0.0
+        ]);
+    //***
+
     // Set flag for when to stop program
     let mut is_running = true;
+
+    // Set clear color
+    unsafe {
+        gl::ClearColor(0.24, 0.4, 0.27, 1.0);
+    }
 
     // Start frame timer
     let mut now = Instant::now();
@@ -84,11 +98,10 @@ fn main() {
 
         // Clear screen
         unsafe {
-            gl::ClearColor(0.24, 0.4, 0.27, 1.0);
             gl::Clear(gl::COLOR_BUFFER_BIT);
         }
 
-        // TODO: Add render code here
+        tri.draw();
 
         // Swap what we just rendered onto screen
         // Remember that if vsync is enabled this is blocking

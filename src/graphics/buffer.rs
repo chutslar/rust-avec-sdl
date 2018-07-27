@@ -84,6 +84,10 @@ impl Buffer {
         }
         self.unbind();
     }
+
+    pub fn target(&self) -> BufferTarget {
+        self.target
+    }
 }
 
 impl Drop for Buffer {

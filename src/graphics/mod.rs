@@ -7,6 +7,26 @@ pub mod shaders;
 pub mod program;
 pub mod textures;
 pub mod buffer;
+pub mod vertex_array;
+
+#[repr(u32)]
+#[derive(Clone, Copy)]
+pub enum GLDataType {
+    Byte = gl::BYTE, 
+    UnsignedByte = gl::UNSIGNED_BYTE, 
+    Short = gl::SHORT, 
+    UnsignedShort = gl::UNSIGNED_SHORT, 
+    Int = gl::INT, 
+    UnsignedInt = gl::UNSIGNED_INT, 
+    HalfFloat = gl::HALF_FLOAT, 
+    Float = gl::FLOAT, 
+    Double = gl::DOUBLE, 
+    Fixed = gl::FIXED, 
+    // Don't see need for the following datatypes, and so have excluded them:
+    //  -GL_INT_2_10_10_10_REV, 
+    //  -GL_UNSIGNED_INT_2_10_10_10_REV,
+    //  -GL_UNSIGNED_INT_10F_11F_11F_REV
+}
 
 pub struct Triangles {
     vertices: Vec<f32>,

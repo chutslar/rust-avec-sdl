@@ -5,12 +5,12 @@ extern crate nalgebra as na;
 use std::{path, ptr};
 use graphics::textures::image::GenericImage;
 use std::os::raw::c_void;
-use graphics::{program, buffer};
+use graphics::{program, buffer, vertex_array, GLDataType};
 
 pub struct Texture {
     tex_id: u32,
     vbo: buffer::Buffer,
-    vao: u32,
+    vao: vertex_array::VertexArrayObject,
     ebo: buffer::Buffer,
     program: program::Program,
 }
@@ -88,49 +88,35 @@ impl Texture {
             indices
         );
 
+        let vao = vertex_array::VertexArrayObject::new(&vbo);
+        vao.set_attribute(
+            &vbo,
+            0, // index of attrib (layout = 0)
+            3, // number of components per attrib
+            GLDataType::Float, // data type
+            false, // normalized
+            20, // byte offset
+            0
+        );
+        vao.set_attribute(
+            &vbo,
+            1, // index of attrib (layout = 0)
+            2, // number of components per attrib
+            GLDataType::Float, // data type
+            false, // normalized
+            20, // byte offset
+            12
+        );
+
         let program = program::Program::standard().unwrap();
 
-        let mut texture = Texture { 
+        Ok(Texture { 
             tex_id,
             vbo,
-            vao: 0,
+            vao,
             ebo,
             program
-        };
-        texture.init();
-
-        Ok(texture)
-    }
-
-    fn init(&mut self) {
-        self.vbo.bind();
-
-        // Bind VAO information, then unbind VAO and VBO
-        unsafe {
-            gl::GenVertexArrays(1, &mut self.vao);
-            gl::BindVertexArray(self.vao);
-            gl::EnableVertexAttribArray(0);
-            gl::VertexAttribPointer(
-                0, // index of attrib (layout = 0)
-                3, // number of components per attrib
-                gl::FLOAT, // data type
-                gl::FALSE, // normalized
-                20 as gl::types::GLint, // byte offset
-                ptr::null()
-            );
-            gl::EnableVertexAttribArray(1);
-            gl::VertexAttribPointer(
-                1, // index of attrib (layout = 1)
-                2, // number of components per attrib
-                gl::FLOAT, // data type
-                gl::FALSE, // normalized
-                20 as gl::types::GLint, // byte offset
-                12 as *const c_void
-            );
-            gl::BindVertexArray(0);
-        }
-
-        self.vbo.unbind();
+        })
     }
 
     pub fn draw(&self) {
@@ -138,9 +124,8 @@ impl Texture {
         unsafe {
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, self.tex_id);
-            
-            gl::BindVertexArray(self.vao);
         }
+        self.vao.bind();
         self.ebo.bind();
         unsafe {
             gl::DrawElements(
@@ -149,8 +134,8 @@ impl Texture {
                 gl::UNSIGNED_INT, // type
                 ptr::null() // buffer offset
             );
-            gl::BindVertexArray(0);
         }
+        self.vao.unbind();
         self.ebo.unbind();
         self.program.set_used(false);
     }

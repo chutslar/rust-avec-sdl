@@ -1,6 +1,6 @@
 extern crate gl;
 
-use std::ffi::{CString, CStr};
+use std::ffi::CString;
 use std::ptr;
 use graphics::shaders;
 
@@ -44,13 +44,23 @@ impl Program {
         Program::from_shaders(&[standard_vert, standard_frag])
     }
 
+    pub fn triangle() -> Result<Program, String> {
+        let tri_vert = shaders::Shader::from_vert_source(
+            &CString::new(shaders::TRIANGLE_VERTEX_SOURCE_STR).unwrap()
+        )?;
+        let tri_frag = shaders::Shader::from_frag_source(
+            &CString::new(shaders::TRIANGLE_FRAG_SOURCE_STR).unwrap()
+        )?;
+        Program::from_shaders(&[tri_vert, tri_frag])
+    }
+
     pub fn id(&self) -> gl::types::GLuint {
         self.id
     }
 
-    pub fn set_used(&self) {
+    pub fn set_used(&self, used: bool) {
         unsafe {
-            gl::UseProgram(self.id);
+            gl::UseProgram(if used { self.id} else { 0 });
         }
     }
 }

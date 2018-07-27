@@ -1,14 +1,16 @@
 extern crate sdl2;
 extern crate gl;
 
-use std::ptr;
+use std::{ptr, mem};
 
 pub mod shaders;
 pub mod program;
+pub mod textures;
+pub mod buffer;
 
 pub struct Triangles {
     vertices: Vec<f32>,
-    vao: gl::types::GLuint,
+    vao: u32,
     program: program::Program,
 }
 
@@ -17,7 +19,7 @@ impl Triangles {
         let mut tri = Triangles { 
             vertices, 
             vao: 0,
-            program: program::Program::standard().unwrap(),
+            program: program::Program::triangle().unwrap(),
         };
         tri.init();
         tri
@@ -37,7 +39,6 @@ impl Triangles {
             );
         }
 
-        //let mut vao: gl::types::GLuint = 0;
         // Bind VAO information, then unbind VAO and VBO
         unsafe {
             gl::GenVertexArrays(1, &mut self.vao);
@@ -48,7 +49,7 @@ impl Triangles {
                 3, // number of components per attrib
                 gl::FLOAT, // data type
                 gl::FALSE, // normalized
-                12 as gl::types::GLint, // byte offset
+                3 * mem::size_of::<f32>() as gl::types::GLint, // byte offset
                 ptr::null()
             );
             gl::BindBuffer(gl::ARRAY_BUFFER, 0);
@@ -57,7 +58,7 @@ impl Triangles {
     }
 
     pub fn draw(&self) {
-        self.program.set_used();
+        self.program.set_used(true);
         unsafe {
             gl::BindVertexArray(self.vao);
             gl::DrawArrays(
@@ -66,5 +67,10 @@ impl Triangles {
                 3 // number of indices to render
             )
         }
+        self.program.set_used(false);
     }
+}
+
+pub struct Rectangle {
+    
 }

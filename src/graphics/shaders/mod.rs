@@ -9,6 +9,12 @@ pub static STANDARD_VERTEX_SOURCE_STR: &str =
 pub static STANDARD_FRAG_SOURCE_STR: &str = 
     include_str!("standard.frag");
 
+pub static TRIANGLE_VERTEX_SOURCE_STR: &str = 
+    include_str!("triangle.vert");
+
+pub static TRIANGLE_FRAG_SOURCE_STR: &str = 
+    include_str!("triangle.frag");
+
 pub struct Shader {
     id: gl::types::GLuint,
 }

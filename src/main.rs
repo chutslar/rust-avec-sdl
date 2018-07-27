@@ -1,9 +1,13 @@
 extern crate sdl2;
 extern crate sdl2_sys;
 extern crate gl;
+extern crate nalgebra as na;
 
 // Associated library
 extern crate ras;
+
+// For graphics
+use ras::graphics::textures;
 
 // For exiting process
 use std::process;
@@ -67,14 +71,22 @@ fn main() {
             0.5, -0.5, 0.0,
             0.0, 0.5, 0.0
         ]);
+
+    let smiley = textures::Texture::load("res/awesomeface.png")
+                    .unwrap();
     //***
 
     // Set flag for when to stop program
     let mut is_running = true;
 
-    // Set clear color
+    // GL initializations
     unsafe {
+        // Set clear color
         gl::ClearColor(0.24, 0.4, 0.27, 1.0);
+        // Set a blend function so we can have transparency
+        gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
+        // Enable blending
+        gl::Enable(gl::BLEND);
     }
 
     // Start frame timer
@@ -102,6 +114,7 @@ fn main() {
         }
 
         tri.draw();
+        smiley.draw();
 
         // Swap what we just rendered onto screen
         // Remember that if vsync is enabled this is blocking

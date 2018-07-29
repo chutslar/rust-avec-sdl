@@ -11,3 +11,6 @@ Cargo.lock
 
 # Ignore dlls
 *.dll
+
+# Used by Inno Setup to generate .exe
+/inno_setup/

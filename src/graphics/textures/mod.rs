@@ -1,8 +1,10 @@
+#![allow(dead_code)]
+
 extern crate image;
 extern crate gl;
 extern crate nalgebra as na;
 
-use std::{path, ptr};
+use std::{path, ptr, mem};
 use graphics::textures::image::GenericImage;
 use std::os::raw::c_void;
 use graphics::{program, buffer, vertex_array, GLDataType};
@@ -15,6 +17,20 @@ pub struct Texture {
     program: program::Program,
 }
 
+
+struct Pos3D {
+    x: f32, y: f32, z: f32,
+}
+
+struct TexCoord {
+    u: u16, v: u16,
+}
+
+struct ImageVertex {
+    pos: Pos3D, tex_coord: TexCoord,
+}
+
+static IMAGE_VERTEX_STRIDE: isize = mem::size_of::<ImageVertex>() as isize;
 
 impl Texture {
     pub fn load<P>(path: P) -> Result<Texture, String>
@@ -51,7 +67,7 @@ impl Texture {
             gl::TexImage2D(
                 gl::TEXTURE_2D,
                 0, // Mipmap level
-                gl::RGBA as i32, // Format
+                gl::RGBA8 as i32, // Format
                 img.dimensions().0 as i32, // Width
                 img.dimensions().1 as i32, // Height
                 0, // Legacy
@@ -62,16 +78,27 @@ impl Texture {
             gl::BindTexture(gl::TEXTURE_2D, 0);
         }
 
-        let vertices: Vec<f32> = vec![
-            // positions     // texture coords
-            0.5, 0.5, 0.0,   1.0, 1.0,  // top right
-            0.5, -0.5, 0.0,  1.0, 0.0,  // bottom right
-            -0.5, -0.5, 0.0, 0.0, 0.0,  // bottom left
-            -0.5, 0.5, 0.0,  0.0, 1.0,  // top left
+        
+        let vertices: Vec<ImageVertex> = vec![
+            ImageVertex { // top right
+                pos: Pos3D { x: 0.5, y: 0.5, z: 0.0 },
+                tex_coord: TexCoord { u: 1, v: 1}
+            },
+            ImageVertex { // bottom right
+                pos: Pos3D { x: 0.5, y: -0.5, z: 0.0 },
+                tex_coord: TexCoord { u: 1, v: 0}
+            },
+            ImageVertex { // bottom left
+                pos: Pos3D { x: -0.5, y: -0.5, z: 0.0 },
+                tex_coord: TexCoord { u: 0, v: 0}
+            },
+            ImageVertex { // top left
+                pos: Pos3D { x: -0.5, y: 0.5, z: 0.0 },
+                tex_coord: TexCoord { u: 0, v: 1}
+            }
         ];
 
-
-        let indices: Vec<u32> = vec![
+        let indices: Vec<u16> = vec![
             0, 1, 3, // first triangle
             1, 2, 3  // second triangle 
         ];
@@ -95,17 +122,17 @@ impl Texture {
             3, // number of components per attrib
             GLDataType::Float, // data type
             false, // normalized
-            20, // byte offset
+            IMAGE_VERTEX_STRIDE, // stride
             0
         );
         vao.set_attribute(
             &vbo,
             1, // index of attrib (layout = 0)
             2, // number of components per attrib
-            GLDataType::Float, // data type
+            GLDataType::UnsignedShort, // data type
             false, // normalized
-            20, // byte offset
-            12
+            IMAGE_VERTEX_STRIDE, // stride
+            mem::size_of::<Pos3D>()
         );
 
         let program = program::Program::standard().unwrap();
@@ -119,24 +146,35 @@ impl Texture {
         })
     }
 
-    pub fn draw(&self) {
-        self.program.set_used(true);
+    pub fn bind(&self, slot: u32) {
         unsafe {
-            gl::ActiveTexture(gl::TEXTURE0);
+            gl::ActiveTexture(gl::TEXTURE0 + slot);
             gl::BindTexture(gl::TEXTURE_2D, self.tex_id);
         }
+    }
+
+    pub fn unbind(&self) {
+        unsafe {
+            gl::BindTexture(gl::TEXTURE_2D, self.tex_id);
+        }
+    }
+
+    pub fn draw(&self) {
+        self.bind(0);
+        self.program.set_used(true);
         self.vao.bind();
         self.ebo.bind();
         unsafe {
             gl::DrawElements(
                 gl::TRIANGLES, // Mode
                 6, // number of vertices to draw
-                gl::UNSIGNED_INT, // type
+                gl::UNSIGNED_SHORT, // type
                 ptr::null() // buffer offset
             );
         }
         self.vao.unbind();
         self.ebo.unbind();
+        self.unbind();
         self.program.set_used(false);
     }
 }

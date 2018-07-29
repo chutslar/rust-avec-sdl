@@ -3,7 +3,9 @@ extern crate gl;
 
 use std::{ptr, mem};
 
+pub mod renderer;
 pub mod shaders;
+pub mod material;
 pub mod program;
 pub mod textures;
 pub mod buffer;
@@ -26,6 +28,10 @@ pub enum GLDataType {
     //  -GL_INT_2_10_10_10_REV, 
     //  -GL_UNSIGNED_INT_2_10_10_10_REV,
     //  -GL_UNSIGNED_INT_10F_11F_11F_REV
+}
+
+pub struct Color {
+    r: f32, g: f32, b: f32, a: f32,
 }
 
 pub struct Triangles {
